@@ -1,0 +1,28 @@
+{
+  "name": "equation-solver-app",
+  "version": "1.0.0",
+  "description": "一个自动求解方程和生成方程组的手机应用",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "ts-node src/main.ts",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "typescript": "^4.5.0",
+    "ts-node": "^10.0.0",
+    "jest": "^27.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.0",
+    "@types/node": "^16.0.0"
+  },
+  "keywords": [
+    "方程",
+    "求解",
+    "生成",
+    "数学"
+  ],
+  "author": "你的名字",
+  "license": "MIT"
+}
