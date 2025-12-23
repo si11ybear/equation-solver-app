@@ -252,25 +252,186 @@ export class EquationSolver {
         
         if (discriminant > 0) {
             // 两个不同实根
-            const sqrtD = Math.sqrt(discriminant);
-            const x1 = (-b + sqrtD) / (2 * a);
-            const x2 = (-b - sqrtD) / (2 * a);
-
-            return `${varName}_1 = ${this.formatNumber(x1)}, ${varName}_2 = ${this.formatNumber(x2)}`;
+            return this.solveRealRoots(a, b, discriminant, varName);
         } else if (Math.abs(discriminant) < 1e-10) {
             // 重根
-            const x = -b / (2 * a);
-            return `${varName}_1 = ${varName}_2 = ${this.formatNumber(x)}`;
+            return this.solveRepeatedRoot(a, b, varName);
         } else {
             // 复数根
-            const realPart = -b / (2 * a);
-            const imagPart = Math.sqrt(-discriminant) / (2 * a);
-            
-            return `${varName}_1 = ${this.formatNumber(realPart)} + ${this.formatNumber(imagPart)}i, ` +
-                   `${varName}_2 = ${this.formatNumber(realPart)} - ${this.formatNumber(imagPart)}i`;
+            return this.solveComplexRoots(a, b, discriminant, varName);
         }
     }
+
+    // 实根求解
+    private solveRealRoots(a: number, b: number, discriminant: number, varName: string): string {
+        const sqrtSimplified = this.simplifySqrt(discriminant);
+        
+        if (sqrtSimplified && sqrtSimplified.radical !== 1) {
+            // 判别式无法完全开方，保留根号
+            return this.formatRootWithRadical(a, b, sqrtSimplified, varName);
+        } else {
+            // 可以完全开方
+            const sqrtD = sqrtSimplified ? sqrtSimplified.coefficient : Math.sqrt(discriminant);
+            const x1 = (-b + sqrtD) / (2 * a);
+            const x2 = (-b - sqrtD) / (2 * a);
+            
+            return `${varName}_1 = ${this.formatNumber(x1)}, ${varName}_2 = ${this.formatNumber(x2)}`;
+        }
+    }
+
+    // 格式化带根号的解
+    private formatRootWithRadical(a: number, b: number, sqrtSimplified: { coefficient: number, radical: number }, varName: string): string {
+        const { coefficient, radical } = sqrtSimplified;
+        
+        // 提取分子分母的公约数
+        const gcdNumerator = this.gcd(-b, 2 * a);
+        const gcdDenominator = this.gcd(coefficient, 2 * a);
+        
+        let numerator1 = -b;
+        let numerator2 = coefficient;
+        let denominator = 2 * a;
+        
+        // 尝试化简分数
+        if (Math.abs(gcdNumerator) > 1e-10 && Math.abs(gcdDenominator) > 1e-10) {
+            const gcdTotal = this.gcd(gcdNumerator, gcdDenominator);
+            if (Math.abs(gcdTotal) > 1) {
+                numerator1 /= gcdTotal;
+                numerator2 /= gcdTotal;
+                denominator /= gcdTotal;
+            }
+        }
+        
+        // 格式化输出
+        const sqrtPart = radical === 1 ? '' : `\\sqrt{${radical}}`;
+        
+        if (Math.abs(numerator2) < 1e-10) {
+            // 没有根号部分
+            const x = numerator1 / denominator;
+            return `${varName} = ${this.formatNumber(x)}`;
+        }
+        
+        if (Math.abs(denominator - 1) < 1e-10) {
+            // 分母为1
+            if (Math.abs(numerator1) < 1e-10) {
+                return `${varName}_1 = ${this.formatNumber(numerator2)}${sqrtPart}, ${varName}_2 = ${this.formatNumber(-numerator2)}${sqrtPart}`;
+            } else {
+                return `${varName}_1 = ${this.formatNumber(numerator1)} + ${this.formatNumber(numerator2)}${sqrtPart}, ` +
+                    `${varName}_2 = ${this.formatNumber(numerator1)} - ${this.formatNumber(numerator2)}${sqrtPart}`;
+            }
+        } else {
+            // 有分母
+            if (Math.abs(numerator1) < 1e-10) {
+                return `${varName}_1 = \\frac{${this.formatNumber(numerator2)}${sqrtPart}}{${this.formatNumber(denominator)}}, ` +
+                    `${varName}_2 = -\\frac{${this.formatNumber(numerator2)}${sqrtPart}}{${this.formatNumber(denominator)}}`;
+            } else {
+                return `${varName}_1 = \\frac{${this.formatNumber(numerator1)} + ${this.formatNumber(numerator2)}${sqrtPart}}{${this.formatNumber(denominator)}}, ` +
+                    `${varName}_2 = \\frac{${this.formatNumber(numerator1)} - ${this.formatNumber(numerator2)}${sqrtPart}}{${this.formatNumber(denominator)}}`;
+            }
+        }
+    }
+
+    // 在 EquationSolver 类中添加
+    private simplifySqrt(value: number): { coefficient: number, radical: number } | null {
+        if (value < 0 || Math.abs(value) < 1e-10) {
+            return null;
+        }
+        
+        // 如果是完全平方数
+        const sqrt = Math.sqrt(value);
+        if (Math.abs(sqrt - Math.round(sqrt)) < 1e-10) {
+            return { coefficient: Math.round(sqrt), radical: 1 };
+        }
+        
+        // 分解因式，提取平方因子
+        let coefficient = 1;
+        let radical = Math.abs(value);
+        
+        // 分解到1000以内的因子
+        for (let i = 2; i <= 1000; i++) {
+            const square = i * i;
+            while (Math.abs(radical - Math.round(radical / square) * square) < 1e-10) {
+                coefficient *= i;
+                radical /= square;
+            }
+        }
+        
+        // 检查是否能完全开方
+        if (Math.abs(radical - 1) < 1e-10) {
+            return { coefficient, radical: 1 };
+        }
+        
+        return { coefficient, radical };
+    }
+
+    private solveRepeatedRoot(a: number, b: number, varName: string): string {
+        const x = -b / (2 * a);
+        
+        // 尝试化为分数形式
+        const fraction = this.decimalToFraction(x);
+        if (fraction && fraction.includes('/')) {
+            return `${varName}_1 = ${varName}_2 = \\frac{${fraction.split('/')[0]}}{${fraction.split('/')[1]}}`;
+        }
+        
+        return `${varName}_1 = ${varName}_2 = ${this.formatNumber(x)}`;
+    }
     
+    // 复数根求解
+    private solveComplexRoots(a: number, b: number, discriminant: number, varName: string): string {
+        const positiveDiscriminant = -discriminant;
+        const sqrtSimplified = this.simplifySqrt(positiveDiscriminant);
+        
+        if (sqrtSimplified && sqrtSimplified.radical !== 1) {
+            // 无法完全开方，保留根号
+            return this.formatComplexRootWithRadical(a, b, sqrtSimplified, varName);
+        } else {
+            // 可以完全开方
+            const sqrtD = sqrtSimplified ? sqrtSimplified.coefficient : Math.sqrt(positiveDiscriminant);
+            const realPart = -b / (2 * a);
+            const imagPart = sqrtD / (2 * a);
+            
+            return `${varName}_1 = ${this.formatNumber(realPart)} + ${this.formatNumber(imagPart)}i, ` +
+                `${varName}_2 = ${this.formatNumber(realPart)} - ${this.formatNumber(imagPart)}i`;
+        }
+    }
+
+    // 格式化带根号的复数解
+    private formatComplexRootWithRadical(a: number, b: number, sqrtSimplified: { coefficient: number, radical: number }, varName: string): string {
+        const { coefficient, radical } = sqrtSimplified;
+        
+        const gcd1 = this.gcd(-b, 2 * a);
+        const gcd2 = this.gcd(coefficient, 2 * a);
+        const gcdTotal = this.gcd(gcd1, gcd2);
+        
+        let numerator1 = -b;
+        let numerator2 = coefficient;
+        let denominator = 2 * a;
+        
+        if (Math.abs(gcdTotal) > 1) {
+            numerator1 /= gcdTotal;
+            numerator2 /= gcdTotal;
+            denominator /= gcdTotal;
+        }
+        
+        const sqrtPart = radical === 1 ? '' : `\\sqrt{${radical}}`;
+        
+        if (Math.abs(denominator - 1) < 1e-10) {
+            if (Math.abs(numerator1) < 1e-10) {
+                return `${varName}_1 = ${this.formatNumber(numerator2)}${sqrtPart}i, ` +
+                    `${varName}_2 = -${this.formatNumber(numerator2)}${sqrtPart}i`;
+            } else {
+                return `${varName}_1 = ${this.formatNumber(numerator1)} + ${this.formatNumber(numerator2)}${sqrtPart}i, ` +
+                    `${varName}_2 = ${this.formatNumber(numerator1)} - ${this.formatNumber(numerator2)}${sqrtPart}i`;
+            }
+        } else {
+            if (Math.abs(numerator1) < 1e-10) {
+                return `${varName}_1 = \\frac{${this.formatNumber(numerator2)}${sqrtPart}i}{${this.formatNumber(denominator)}}, ` +
+                    `${varName}_2 = -\\frac{${this.formatNumber(numerator2)}${sqrtPart}i}{${this.formatNumber(denominator)}}`;
+            } else {
+                return `${varName}_1 = \\frac{${this.formatNumber(numerator1)} + ${this.formatNumber(numerator2)}${sqrtPart}i}{${this.formatNumber(denominator)}}, ` +
+                    `${varName}_2 = \\frac{${this.formatNumber(numerator1)} - ${this.formatNumber(numerator2)}${sqrtPart}i}{${this.formatNumber(denominator)}}`;
+            }
+        }
+    }
     // 解析二次表达式
     private parseQuadraticExpression(left: string, right: string, varName: string): { a: number, b: number, c: number } {
         let a = 0, b = 0, c = 0;
@@ -601,7 +762,7 @@ export class EquationSolver {
         }
         
         // 化简分数
-        const gcd = this.greatestCommonDivisor(Math.abs(h1), Math.abs(k1));
+        const gcd = this.gcd(Math.abs(h1), Math.abs(k1));
         h1 /= gcd;
         k1 /= gcd;
         
@@ -618,7 +779,7 @@ export class EquationSolver {
     }
     
     // 计算最大公约数
-    private greatestCommonDivisor(a: number, b: number): number {
+    private gcd(a: number, b: number): number {
         a = Math.abs(a);
         b = Math.abs(b);
         
