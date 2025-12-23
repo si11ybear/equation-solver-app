@@ -4,18 +4,19 @@
   "description": "一个自动求解方程和生成方程组的手机应用",
   "main": "src/main.ts",
   "scripts": {
-    "start": "ts-node src/main.ts",
-    "build": "tsc",
-    "test": "jest"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "typescript": "^4.5.0",
+    "jest": "^27.0.0",
     "ts-node": "^10.0.0",
-    "jest": "^27.0.0"
+    "typescript": "^4.9.5"
   },
   "devDependencies": {
     "@types/jest": "^27.0.0",
-    "@types/node": "^16.0.0"
+    "@types/node": "^25.0.3",
+    "vite": "^7.3.0"
   },
   "keywords": [
     "方程",

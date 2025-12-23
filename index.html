@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>方程求解器</title>
+    <link rel="stylesheet" href="./src/styles/app.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <div id="app">
+        <h1>🧮 方程求解器</h1>
+        
+        <!-- 输入方程区域 -->
+        <h2>🔍 求解方程</h2>
+        <div class="input-section">
+            <label for="equationInput">🔤 输入方程:</label>
+            <input type="text" id="equationInput" 
+                   placeholder="例如: 2x + 3 = 0 或 2x + 3y = 5, x - y = 1 (方程组用逗号分隔)"
+                   autocomplete="off">
+            <button id="solveButton">🔍 求解方程</button>
+        </div>
+        
+        <!-- 结果显示区域 -->
+        <div id="solution" class="result-container"></div>
+        
+        <!-- 示例方程 -->
+        <div class="equation-examples">
+            <h3>📋 示例方程:</h3>
+            点击下列示例方程可以将示例方程填入输入框。
+            <ul>
+              <li class="example" onclick="document.getElementById('equationInput').value = '2x + 3 = 0'">2x + 3 = 0</li>
+              <li class="example" onclick="document.getElementById('equationInput').value = 'x^2 - 5x + 6 = 0'">x² - 5x + 6 = 0</li>
+              <li class="example" onclick="document.getElementById('equationInput').value = '(x-2)(x+3)=0'">(x-2)(x+3)=0</li>
+              <li class="example" onclick="document.getElementById('equationInput').value = '2x + 3y = 5, x - y = 1'">二元方程组</li>
+              <li class="example" onclick="document.getElementById('equationInput').value = 'x + y + z = 6, 2x - y + z = 3, x + 2y - z = 4'">三元方程组</li>
+            </ul>
+          </div>
+        
+        <!-- 快捷键提示 -->
+        <div class="shortcut-info">
+            <h3>⌨️ 快捷键:</h3>
+            <ul>
+                <li>按 Enter 键求解方程</li>
+                <li>Ctrl+I: 示例一元一次方程</li>
+                <li>Ctrl+O: 示例一元二次方程</li>
+                <li>Ctrl+P: 示例因式分解方程</li>
+            </ul>
+        </div>
+
+        <!-- 生成方程区域 -->
+        <h2>🔍 生成方程</h2>
+        <div class="generate-section">
+            <label for="equationType">🎲 生成方程类型:</label>
+            <select id="equationType">
+                <option value="LINEAR_ONE">一元一次方程</option>
+                <option value="LINEAR_2">二元一次方程组</option>
+                <option value="LINEAR_3">三元一次方程组</option>
+                <option value="QUADRATIC">一元二次方程</option>
+                <option value="FACTORING">因式分解</option>
+            </select>
+            <button id="generateButton">✨ 生成方程</button>
+        </div>
+        
+        <!-- 生成的方程显示区域 -->
+        <div id="generatedEquation" class="result-container"></div>
+        
+
+    </div>
+    <script type="module" src="./src/main.js"></script>
+</body>
+</html>
