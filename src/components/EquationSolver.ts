@@ -94,21 +94,28 @@ export class EquationSolver {
     
     // 解析一元一次方程 ax + b = 0
     private solveLinearOneEquation(equation: string): string {
+        console.log('求解方程:', equation);
         const [left, right] = equation.split('=');
         const varName = this.extractVariables(equation)[0];
+        console.log('变量:', varName);
+        console.log('左边:', left, '右边:', right);
         
         // 标准化方程到 ax + b = 0 形式
         let a = 0, b = 0;
         
         // 解析左边
         const leftCoeff = this.parseExpression(left, varName);
+        console.log('左边解析结果:', leftCoeff);
         a += leftCoeff.coefficient;
         b += leftCoeff.constant;
         
         // 解析右边
         const rightCoeff = this.parseExpression(right, varName);
+        console.log('右边解析结果:', rightCoeff);
         a -= rightCoeff.coefficient;
         b -= rightCoeff.constant;
+        
+        console.log('最终 a:', a, 'b:', b);
         
         // 检查是否有解
         if (a === 0) {
@@ -120,6 +127,8 @@ export class EquationSolver {
         }
         
         const solution = -b / a;
+        console.log('解:', solution);
+        console.log('解:', this.formatNumber(solution));
         return `${varName} = ${this.formatNumber(solution)}`;
     }
     
@@ -146,13 +155,29 @@ export class EquationSolver {
     
     // 解析系数
     private parseCoefficient(term: string, varName: string): number {
-        const cleanTerm = term.replace(new RegExp(`\\s*${varName}\\s*`), '');
-        if (cleanTerm === '' || cleanTerm === '+') {
+        // 去除空格
+        term = term.trim();
+        
+        // 如果项不包含变量名，返回0
+        if (!term.includes(varName)) {
+            return 0;
+        }
+        
+        // 移除变量名
+        const coeffStr = term.replace(new RegExp(`${varName}\\s*$`), '').trim();
+        
+        if (coeffStr === '' || coeffStr === '+') {
             return 1;
-        } else if (cleanTerm === '-') {
+        } else if (coeffStr === '-') {
             return -1;
         } else {
-            return parseFloat(cleanTerm) || 0;
+            const coeff = parseFloat(coeffStr);
+            // 检查 parseFloat 的结果
+            if (isNaN(coeff)) {
+                console.error(`无法解析系数: "${coeffStr}" 来自项: "${term}"`);
+                return 0;
+            }
+            return coeff;
         }
     }
     
@@ -168,9 +193,17 @@ export class EquationSolver {
     private splitTerms(expr: string): string[] {
         if (!expr) return [];
         
+        expr = expr.trim();
+        if (expr === '') return [];
+        
         const terms: string[] = [];
         let currentTerm = '';
         let inParentheses = 0;
+        
+        // 确保表达式以符号开头
+        if (expr[0] !== '+' && expr[0] !== '-') {
+            expr = '+' + expr;
+        }
         
         for (let i = 0; i < expr.length; i++) {
             const char = expr[i];
@@ -529,8 +562,16 @@ export class EquationSolver {
         let h1 = 1, h2 = 0;
         let k1 = 0, k2 = 1;
         let b = decimal;
+        let iteration = 0;
+        const maxIterations = 20;
         
         do {
+            iteration++;
+            if (iteration > maxIterations || !isFinite(b)) {
+                // 回退到精确小数表示
+                return decimal.toFixed(6).replace(/\.?0+$/, '');
+            }
+            
             const a = Math.floor(b);
             let aux = h1;
             h1 = a * h1 + h2;
@@ -538,18 +579,48 @@ export class EquationSolver {
             aux = k1;
             k1 = a * k1 + k2;
             k2 = aux;
-            b = 1 / (b - a);
+            
+            const remainder = b - a;
+            if (Math.abs(remainder) < tolerance) {
+                break;
+            }
+            
+            b = 1 / remainder;
         } while (Math.abs(decimal - h1 / k1) > decimal * tolerance);
+        
+        if (k1 === 0) {
+            return null;
+        }
+        
+        // 化简分数
+        const gcd = this.greatestCommonDivisor(Math.abs(h1), Math.abs(k1));
+        h1 /= gcd;
+        k1 /= gcd;
+        
+        if (k1 < 0) { // 确保分母为正
+            h1 = -h1;
+            k1 = -k1;
+        }
         
         if (k1 === 1) {
             return h1.toString();
-        } else if (h1 / k1 === Math.round(h1 / k1)) {
-            return Math.round(h1 / k1).toString();
         } else {
             return `${h1}/${k1}`;
         }
     }
     
+    // 计算最大公约数
+    private greatestCommonDivisor(a: number, b: number): number {
+        a = Math.abs(a);
+        b = Math.abs(b);
+        
+        while (b !== 0) {
+            const temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
+    }
     // 获取使用说明
     public getInstructions(): string {
         return `输入方程格式说明：
