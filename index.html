@@ -6,6 +6,7 @@
     <title>方程求解器</title>
     <link rel="stylesheet" href="./src/styles/app.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 </head>
 <body>
     <div id="app">
@@ -15,6 +16,7 @@
         <h2>🔍 求解方程</h2>
         <div class="input-section">
             <label for="equationInput">🔤 输入方程:</label>
+            支持的方程类别：一元一次方程、二元一次方程组、三元一次方程组、一元二次方程。
             <input type="text" id="equationInput" 
                    placeholder="例如: 2x + 3 = 0 或 2x + 3y = 5, x - y = 1 (方程组用逗号分隔)"
                    autocomplete="off">
@@ -28,12 +30,19 @@
         <div class="equation-examples">
             <h3>📋 示例方程:</h3>
             点击下列示例方程可以将示例方程填入输入框。
-            <ul>
-              <li class="example" onclick="document.getElementById('equationInput').value = '2x + 3 = 0'">2x + 3 = 0</li>
-              <li class="example" onclick="document.getElementById('equationInput').value = 'x^2 - 5x + 6 = 0'">x² - 5x + 6 = 0</li>
-              <!-- <li class="example" onclick="document.getElementById('equationInput').value = '(x-2)(x+3)=0'">(x-2)(x+3)=0</li> -->
-              <li class="example" onclick="document.getElementById('equationInput').value = '2x + 3y = 5, x - y = 1'">二元方程组</li>
-              <li class="example" onclick="document.getElementById('equationInput').value = 'x + y + z = 6, 2x - y + z = 3, x + 2y - z = 4'">三元方程组</li>
+            <ul id="equationExamples">
+                <li class="example" data-equation="2x + 3 = 0">
+                    <span class="katex-example" id="example1"></span>
+                </li>
+                <li class="example" data-equation="x^2 - 5x + 6 = 0">
+                    <span class="katex-example" id="example2"></span>
+                </li>
+                <li class="example" data-equation="2x + 3y = 5, x - y = 1">
+                    <span class="katex-example" id="example3"></span>
+                </li>
+                <li class="example" data-equation="x + y + z = 6, 2x - y + z = 3, x + 2y - z = 4">
+                    <span class="katex-example" id="example4"></span>
+                </li>
             </ul>
           </div>
         
@@ -68,5 +77,6 @@
 
     </div>
     <script type="module" src="./src/main.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 </body>
 </html>

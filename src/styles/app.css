@@ -119,18 +119,27 @@ button {
 }
 
 /* 结果区域样式 - 修复这里 */
-.result-container {
-    visibility: visible !important;
-    opacity: 1 !important;
-    display: block !important;
+.result-container:empty {
+    display: none;
+    opacity: 0;
+    padding: 0;
+    border-width: 0;
+    margin: 0;
+    height: 0;
+    min-height: 0;
+}
+
+.result-container:not(:empty) {
+    display: block;
+    opacity: 1;
     margin-top: 20px;
     margin-bottom: 20px;
     padding: 20px;
     border-radius: 10px;
     border: 2px solid #e9ecef;
     background: #f8f9fa;
-    min-height: 60px;
     font-size: 16px;
+    min-height: 60px;    
 }
 
 /* 消息样式 */
@@ -265,5 +274,86 @@ button {
         display: block;
         width: 100%;
         margin: 5px 0;
+    }
+}
+
+.equation-examples {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.equation-examples h3 {
+    margin-top: 0;
+    color: #495057;
+    font-size: 1.2em;
+}
+
+.equation-examples ul {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0 0;
+}
+
+.equation-examples .example {
+    margin: 8px 0;
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.equation-examples .example:hover {
+    background: #e7f5ff;
+    border-color: #339af0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.equation-examples .example:active {
+    transform: translateY(0);
+}
+
+.equation-examples .katex-example {
+    flex: 1;
+    font-size: 0.95em;
+    overflow-x: auto;
+    padding: 2px 0;
+}
+
+.equation-examples .example-desc {
+    color: #868e96;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+/* KaTeX 样式调整 */
+.katex-example .katex {
+    font-size: 1em !important;
+    line-height: 1.4;
+}
+
+/* 响应式设计 */
+@media (max-width: 600px) {
+    .equation-examples .example {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .equation-examples .katex-example {
+        width: 100%;
+        overflow-x: auto;
+    }
+    
+    .katex-example .katex-display > .katex {
+        white-space: nowrap;
     }
 }

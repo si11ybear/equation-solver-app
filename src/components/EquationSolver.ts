@@ -255,19 +255,19 @@ export class EquationSolver {
             const sqrtD = Math.sqrt(discriminant);
             const x1 = (-b + sqrtD) / (2 * a);
             const x2 = (-b - sqrtD) / (2 * a);
-            
-            return `${varName}₁ = ${this.formatNumber(x1)}, ${varName}₂ = ${this.formatNumber(x2)}`;
+
+            return `${varName}_1 = ${this.formatNumber(x1)}, ${varName}_2 = ${this.formatNumber(x2)}`;
         } else if (Math.abs(discriminant) < 1e-10) {
             // 重根
             const x = -b / (2 * a);
-            return `${varName}₁ = ${varName}₂ = ${this.formatNumber(x)}`;
+            return `${varName}_1 = ${varName}_2 = ${this.formatNumber(x)}`;
         } else {
             // 复数根
             const realPart = -b / (2 * a);
             const imagPart = Math.sqrt(-discriminant) / (2 * a);
             
-            return `${varName}₁ = ${this.formatNumber(realPart)} + ${this.formatNumber(imagPart)}i, ` +
-                   `${varName}₂ = ${this.formatNumber(realPart)} - ${this.formatNumber(imagPart)}i`;
+            return `${varName}_1 = ${this.formatNumber(realPart)} + ${this.formatNumber(imagPart)}i, ` +
+                   `${varName}_2 = ${this.formatNumber(realPart)} - ${this.formatNumber(imagPart)}i`;
         }
     }
     
@@ -349,6 +349,10 @@ export class EquationSolver {
         const coeffs1 = this.parseLinearEquation(eq1, [x, y]);
         const coeffs2 = this.parseLinearEquation(eq2, [x, y]);
         
+        console.log('方程1解析结果:', coeffs1);
+        console.log('方程2解析结果:', coeffs2);
+        console.log('变量顺序:', vars);
+        
         // 求解线性方程组
         return this.solveLinearSystem([coeffs1, coeffs2], [x, y]);
     }
@@ -388,10 +392,10 @@ export class EquationSolver {
         vars.forEach(v => result[v] = 0);
         result['constant'] = 0;
         
-        // 解析左边
+        // 关键修改：将所有项移到等号左边
+        // 解析左边，系数为正
         this.addCoefficientsFromExpression(left, result, vars, 1);
-        
-        // 解析右边
+        // 解析右边，系数为负
         this.addCoefficientsFromExpression(right, result, vars, -1);
         
         return result;
@@ -424,16 +428,20 @@ export class EquationSolver {
     private solveLinearSystem(equations: Array<{ [key: string]: number }>, vars: string[]): string {
         const n = vars.length;
         
-        // 构建增广矩阵
+        // 构建增广矩阵 [A|b]
         const matrix: number[][] = [];
         for (let i = 0; i < n; i++) {
             const row: number[] = [];
             for (let j = 0; j < n; j++) {
                 row.push(equations[i][vars[j]] || 0);
             }
+            // 常数项移到等号右边，所以要取负
+            // Ax = b 形式，其中 b = -constant
             row.push(-(equations[i]['constant'] || 0));
             matrix.push(row);
         }
+        
+        console.log('增广矩阵:', matrix);
         
         // 高斯消元法
         for (let i = 0; i < n; i++) {
@@ -529,7 +537,7 @@ export class EquationSolver {
         
         const uniqueSolutions = [...new Set(solutions)].sort((a, b) => a - b);
         const solutionStrings = uniqueSolutions.map((sol, i) => 
-            `${varName}${uniqueSolutions.length > 1 ? `₁` : ''} = ${this.formatNumber(sol)}`
+            `${varName}${uniqueSolutions.length > 1 ? `_1` : ''} = ${this.formatNumber(sol)}`
         );
         
         return solutionStrings.join(', ');
