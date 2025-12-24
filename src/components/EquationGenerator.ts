@@ -299,9 +299,9 @@ export class EquationGenerator {
         // 处理x^2项
         if (a !== 0) {
             if (a > 0) {
-                terms.push(a === 1 ? 'x²' : `${a}x²`);
+                terms.push(a === 1 ? 'x^2' : `${a}x^2`);
             } else {
-                terms.push(a === -1 ? '-x²' : `-${Math.abs(a)}x²`);
+                terms.push(a === -1 ? '-x^2' : `-${Math.abs(a)}x^2`);
             }
         }
         
